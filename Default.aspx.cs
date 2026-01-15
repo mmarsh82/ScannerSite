@@ -10,10 +10,6 @@ namespace ScannerSite
 {
     public partial class Default : Page
     {
-        public static string ProductId { get; set; }
-        public static string ProductNumber { get; set; }
-        public static string ProductType { get; set; }
-
         /// <summary>
         /// Page Constructor
         /// </summary>
@@ -27,14 +23,23 @@ namespace ScannerSite
                 {
                     FormsAuthentication.RedirectToLoginPage();
                 }
-                ((Main)Master).lblName.Text = SQLCommand.GetUserName(HttpContext.Current.User.Identity.Name);
-                ((Main)Master).lblSite.Text = "Wahpeton (01)";
-                ResetScreenFull();
-                if (!string.IsNullOrEmpty(ProductQuery.ReturnId))
+                ((Main)Master).lblNameHeader.Text = "Name:";
+                ((Main)Master).lblName.Text = HttpContext.Current.User.Identity.Name;
+                ((Main)Master).lblSite.Text = "Site: Wahpeton (01)";
+                if (Session["ProductId"] != null)
                 {
-                    ProductPageLoad(ProductQuery.ReturnId, ProductQuery.ReturnType);
-                    ProductQuery.ReturnId = null;
-                    ProductQuery.ReturnType = null;
+                    var _tempId = Session["ProductId"].ToString();
+                    var _tempPn = Session["ProductNumber"].ToString();
+                    var _tempType = Session["ProductType"].ToString();
+                    ResetScreenBase();
+                    Session["ProductId"] = _tempId;
+                    Session["ProductNumber"] = _tempPn;
+                    Session["ProductType"] = _tempType;
+                    ProductPageLoad(Session["ProductId"].ToString(), Session["ProductType"].ToString());
+                }
+                else
+                {
+                    ResetScreenFull();
                 }
             }
         }
@@ -56,11 +61,10 @@ namespace ScannerSite
             tbQtyData.Visible = false;
             lblQtyData.Text = "";
             lblUomData.Text = "";
-            btnQuery.Visible = false;
             btnSubmit.Visible = false;
-            ProductType = null;
-            ProductNumber = null;
-            ProductId = null;
+            Session["ProductType"] = null;
+            Session["ProductNumber"] = null;
+            Session["ProductId"] = null;
         }
 
         /// <summary>
@@ -81,11 +85,13 @@ namespace ScannerSite
             tbQtyData.Visible = false;
             lblQtyData.Text = "";
             lblUomData.Text = "";
-            btnQuery.Visible = false;
             btnSubmit.Visible = false;
-            ProductType = null;
-            ProductNumber = null;
-            ProductId = null;
+            Session["ProductType"] = null;
+            Session["ProductNumber"] = null;
+            Session["ProductId"] = null;
+            Session["ContainerId"] = null;
+            ((Main)Master).ChangeState(Actions.home, false);
+            ((Main)Master).ChangeState(Actions.query, false);
             tbProductId.Focus();
         }
 
@@ -110,12 +116,12 @@ namespace ScannerSite
                     tbQtyData.Visible = true;
                     tbQtyData.Text = "";
                     lblUomData.Text = SQLCommand.GetUom(productId);
-                    btnQuery.Visible = true;
                     btnSubmit.Visible = true;
-                    ProductType = productType;
-                    ProductId = productId;
-                    ProductNumber = productId;
+                    Session["ProductType"] = productType;
+                    Session["ProductNumber"] = productId;
+                    Session["ProductId"] = productId;
                     tbLocFromData.Focus();
+                    ((Main)Master).ChangeState(Actions.query, true);
                     break;
                 case "LN":
                     var _productData = SQLCommand.GetProductByLot(productId);
@@ -131,12 +137,12 @@ namespace ScannerSite
                         lblQtyHeader.Visible = true;
                         lblQtyData.Text = _productData[2];
                         lblUomData.Text = _productData[3];
-                        btnQuery.Visible = true;
                         btnSubmit.Visible = true;
-                        ProductType = productType;
-                        ProductId = productId;
-                        ProductNumber = _productData[0];
+                        Session["ProductType"] = productType;
+                        Session["ProductNumber"] = _productData[0];
+                        Session["ProductId"] = productId;
                         tbLocToData.Focus();
+                        ((Main)Master).ChangeState(Actions.query, true);
                     }
                     else if (_productData.Count == 1)
                     {
@@ -235,28 +241,45 @@ namespace ScannerSite
         /// <param name="e"></param>
         protected void tbProductId_TextChanged(object sender, EventArgs e)
         {
-            ResetScreenBase();
-            var _productId = tbProductId.Text.Contains("|") ? tbProductId.Text : $"{tbProductId.Text}|01";
-            var _rDict = SQLCommand.ProductIdExists(_productId);
-            if (_rDict.FirstOrDefault().Key)
+            if (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name))
             {
-                var _productType = _rDict.FirstOrDefault().Value;
-                switch (_productType)
-                {
-                    case "PN":
-                        tbProductId.Text = _productId;
-                        break;
-                    case "LN":
-                        var _productSplit = _productId.Split('|');
-                        _productId = $"{_productSplit[0]}|P|{_productSplit[1]}";
-                        tbProductId.Text = _productId;
-                        break;
-                }
-                ProductPageLoad(_productId, _productType);
+                FormsAuthentication.RedirectToLoginPage();
             }
             else
             {
-                lblScanError.Text = _rDict.FirstOrDefault().Value;
+                ResetScreenBase();
+                tbProductId.Text = tbProductId.Text.ToUpper();
+                var _contDict = SQLCommand.ContainerExists(tbProductId.Text);
+                if (_contDict.FirstOrDefault().Key)
+                {
+                    Session["ProductId"] = tbProductId.Text;
+                    Response.Redirect($"~/Container.aspx");
+                }
+                else
+                {
+                    var _productId = tbProductId.Text.Contains("|") ? tbProductId.Text : $"{tbProductId.Text}|01";
+                    var _rDict = SQLCommand.ProductIdExists(_productId);
+                    if (_rDict.FirstOrDefault().Key)
+                    {
+                        var _productType = _rDict.FirstOrDefault().Value;
+                        switch (_productType)
+                        {
+                            case "PN":
+                                tbProductId.Text = _productId;
+                                break;
+                            case "LN":
+                                var _productSplit = _productId.Split('|');
+                                _productId = $"{_productSplit[0]}|P|{_productSplit[1]}";
+                                tbProductId.Text = _productId;
+                                break;
+                        }
+                        ProductPageLoad(_productId, _productType);
+                    }
+                    else
+                    {
+                        lblScanError.Text = _rDict.FirstOrDefault().Value;
+                    }
+                }
             }
         }
 
@@ -267,92 +290,85 @@ namespace ScannerSite
         /// <param name="e"></param>
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
-            var _validationResult = ValidateUserInput();
-            if (_validationResult.FirstOrDefault().Key)
+            if (string.IsNullOrEmpty(HttpContext.Current.User.Identity.Name) || string.IsNullOrEmpty(((Main)Master).lblName.Text))
             {
-                var _result = new Dictionary<int, string>();
-                if (lblPartNumberHeader.Visible)
-                {
-                    var _qty = int.Parse(lblQtyData.Text);
-                    var _part = lblPartNumberData.Text.Split('|');
-                    var _lot = tbProductId.Text.Split('|');
-                    _result = M2kCommand.InventoryMove(((Main)Master).lblName.Text, _part[0], _lot[0], lblUomData.Text, lblLocFromData.Text, tbLocToData.Text, _qty, "", "01", new M2kConnection("WAXAS001", "uig72089", "vQYRZ2s54q", Database.CONTI, 1));
-                }
-                else
-                {
-                    var _qty = int.Parse(tbQtyData.Text);
-                    var _part = tbProductId.Text.Split('|');
-                    _result = M2kCommand.InventoryMove(((Main)Master).lblName.Text, _part[0], "", lblUomData.Text, tbLocFromData.Text, tbLocToData.Text, _qty, "", "01", new M2kConnection("WAXAS001", "uig72089", "vQYRZ2s54q", Database.CONTI, 1));
-                }
-                if (_result.FirstOrDefault().Key == 1)
-                {
-                    lblScanError.Text = _result.FirstOrDefault().Value;
-                }
-                else
-                {
-                    lblScanError.Text = "Successful move.";
-                    tbProductId.Text = "";
-                    tbProductId.Focus();
-                }
+                FormsAuthentication.RedirectToLoginPage();
             }
             else
             {
-                var _error = "";
-                switch (_validationResult.FirstOrDefault().Value)
+                var _validationResult = ValidateUserInput();
+                if (_validationResult.FirstOrDefault().Key)
                 {
-                    case "LT":
-                        _error = "Where is the material going?";
-                        tbLocToData.Focus();
-                        break;
-                    case "LF":
-                        _error = "Where is the material?";
-                        tbLocFromData.Focus();
-                        break;
-                    case "QT":
-                        _error = "How much are you moving?";
-                        tbQtyData.Focus();
-                        break;
-                    case "NF":
-                        _error = "Invalid from location.";
-                        tbLocFromData.Text = "";
-                        tbLocFromData.Focus();
-                        break;
-                    case "NT":
-                        _error = "Invalid to location.";
-                        tbLocToData.Text = "";
-                        tbLocToData.Focus();
-                        break;
-                    case "ML":
-                        _error = "Duplicate locations entered.";
-                        tbLocFromData.Text = "";
-                        tbLocToData.Text = "";
-                        tbLocFromData.Focus();
-                        break;
-                    case "NQ":
-                        _error = "Invalid quantity.";
-                        tbQtyData.Text = "";
-                        tbQtyData.Focus();
-                        break;
-                    default:
-                        _error = _validationResult.FirstOrDefault().Value;
-                        break;
+                    var _result = new Dictionary<int, string>();
+                    if (lblPartNumberHeader.Visible)
+                    {
+                        var _qty = int.Parse(lblQtyData.Text);
+                        var _part = lblPartNumberData.Text.Split('|');
+                        var _lot = tbProductId.Text.Split('|');
+                        _result = M2kCommand.InventoryMove(((Main)Master).lblName.Text, _part[0], _lot[0], lblUomData.Text, lblLocFromData.Text, tbLocToData.Text, _qty, "", "01", new M2kConnection("WAXAS001", "uig72089", "vQYRZ2s54q", Database.CONTI, 1));
+                    }
+                    else
+                    {
+                        var _qty = int.Parse(tbQtyData.Text);
+                        var _part = tbProductId.Text.Split('|');
+                        _result = M2kCommand.InventoryMove(((Main)Master).lblName.Text, _part[0], "", lblUomData.Text, tbLocFromData.Text, tbLocToData.Text, _qty, "", "01", new M2kConnection("WAXAS001", "uig72089", "vQYRZ2s54q", Database.CONTI, 1));
+                    }
+                    if (_result.FirstOrDefault().Key == 1)
+                    {
+                        lblScanError.Text = _result.FirstOrDefault().Value;
+                    }
+                    else
+                    {
+                        lblScanError.Text = "Successful move.";
+                        tbProductId.Text = "";
+                        tbProductId.Focus();
+                    }
                 }
-                lblScanError.Text = _error;
+                else
+                {
+                    var _error = "";
+                    switch (_validationResult.FirstOrDefault().Value)
+                    {
+                        case "LT":
+                            _error = "Where is the material going?";
+                            tbLocToData.Focus();
+                            break;
+                        case "LF":
+                            _error = "Where is the material?";
+                            tbLocFromData.Focus();
+                            break;
+                        case "QT":
+                            _error = "How much are you moving?";
+                            tbQtyData.Focus();
+                            break;
+                        case "NF":
+                            _error = "Invalid from location.";
+                            tbLocFromData.Text = "";
+                            tbLocFromData.Focus();
+                            break;
+                        case "NT":
+                            _error = "Invalid to location.";
+                            tbLocToData.Text = "";
+                            tbLocToData.Focus();
+                            break;
+                        case "ML":
+                            _error = "Duplicate locations entered.";
+                            tbLocFromData.Text = "";
+                            tbLocToData.Text = "";
+                            tbLocFromData.Focus();
+                            break;
+                        case "NQ":
+                            _error = "Invalid quantity.";
+                            tbQtyData.Text = "";
+                            tbQtyData.Focus();
+                            break;
+                        default:
+                            _error = _validationResult.FirstOrDefault().Value;
+                            break;
+                    }
+                    lblScanError.Text = _error;
+                }
             }
-        }
-
-
-        /// <summary>
-        /// Product query event for looking at product details
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnQuery_Click(object sender, EventArgs e)
-        {
-            ProductId = tbProductId.Text;
-            ProductNumber = tbQtyData.Visible ? ProductId : lblPartNumberData.Text;
-            ProductType = tbQtyData.Visible ? "nLot" : "Lot";
-            Response.Redirect($"~/ProductQuery.aspx");
         }
 
         /// <summary>

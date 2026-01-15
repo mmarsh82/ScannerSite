@@ -17,37 +17,37 @@
     <form id="MainForm" runat="server">
 <!-- ###### header start ###### -->	
 <div id="fs-header-center"><div id="fs-header">
-    <table id="header" width="200" cellspacing="0" cellpadding="0" summary="header">
-        <tr align="Center">
-            <td id="NavSignOut" class="topnav" width="59" height="24"><a href="LogIn.aspx" title="SignOut">Sign Out</a></td>
-            </tr>
+    <table id="header" width="300" cellspacing="0" cellpadding="0" summary="header">
+        <tr height="24">
+            <td id="NavSignOut" class="topnav"><a id="actionSignOut" style="Width: 50px" href="LogIn.aspx" title="Sign out user." runat="server">Sign Out</a></td>
+            <td style="width: 180px" />
+            <td id="NavHome" class="topnav"><a id="actionHome" style="Width: 50px" visible="false" href="Default.aspx" title="Home page." runat="server">Home</a></td>
+            <td id="NavProdQuery" class="topnav"><a id="actionProdQuery" style="Width: 50px" href="ProductQuery.aspx" title="Product detail information." runat="server">Query</a></td>
+        </tr>
   </table>
 </div></div>
 <!-- ###### header end ###### -->	
 <!-- ###### main content start ###### -->	
 <div id="fs-body-center"><div id="fs-body">
-        <asp:ContentPlaceHolder ID="PageContentHolder" runat="server">
-        </asp:ContentPlaceHolder>
+        <asp:ContentPlaceHolder ID="PageContentHolder" runat="server"/>
  </div></div>
 <!-- ###### main content end ###### -->	
 <!-- ###### footer start ###### -->	
 
 <div id="fs-footer-center"><div id="fs-footer">
-<table id="footer" width="300" cellpadding="0" cellspacing="0" border="0" align="center">
-<tr>
-<td style="width: 39px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">User:</td>
-<td style="width: 149px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">
-    <asp:Label ID="lblName" runat="server"></asp:Label>
-                    </td>
-<td style="width: 59px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">Site:</td>
-<td style="width: 149px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">
-    <asp:Label ID="lblSite" runat="server"></asp:Label>
-                    </td>
-</tr>
-<tr style="font-size:10px; font-family:Arial; color: #fff">
-<td colspan="4" align="center" style="height: 25px">ContiTech Scanner Copyright © 2024 - All Rights Reserved</td>
-</tr>
-</table>
+    <table id="footer" width="300" cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+            <td style="width: 45px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">
+                <asp:Label ID="lblNameHeader" runat="server"/>
+            </td>
+            <td style="width: 250px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">
+                <asp:Label ID="lblName" runat="server"/>
+            </td>
+            <td style="width: 200px; font-size:12px; font-family:Arial; color: #fff; border-bottom: 1px solid #555; height: 25px">
+                <asp:Label ID="lblSite" runat="server"/>
+            </td>
+        </tr>
+    </table>
  </div></div>
 <!-- ###### footer end ###### -->	
 </form>

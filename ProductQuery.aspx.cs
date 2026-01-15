@@ -9,9 +9,6 @@ namespace ScannerSite
 {
     public partial class ProductQuery : Page
     {
-        public static string ReturnId { get; set; }
-        public static string ReturnType { get; set; }
-
         /// <summary>
         /// Page Constructor
         /// </summary>
@@ -25,17 +22,15 @@ namespace ScannerSite
                 {
                     FormsAuthentication.RedirectToLoginPage();
                 }
-                ((Main)Master).lblName.Text = SQLCommand.GetUserName(HttpContext.Current.User.Identity.Name);
-                ((Main)Master).lblSite.Text = "Wahpeton (01)";
+                ((Main)Master).lblNameHeader.Text = "Name:";
+                ((Main)Master).lblName.Text = HttpContext.Current.User.Identity.Name;
+                ((Main)Master).lblSite.Text = "Site: Wahpeton (01)";
             }
-            if (!string.IsNullOrEmpty(Default.ProductNumber))
+            if (Session["ProductNumber"] != null)
             {
-                lblPartNumberData.Text = Default.ProductNumber;
-                lblReturnId.Text = Default.ProductId;
-                lblReturnType.Text = Default.ProductType;
-                Default.ProductId = null;
-                Default.ProductNumber = null;
-                Default.ProductType = null;
+                lblPartNumberData.Text = Session["ProductNumber"].ToString();
+                lblReturnId.Text = Session["ProductId"].ToString();
+                lblReturnType.Text = Session["ProductType"].ToString() == "PN" ? "nLot" : "Lot";
                 using (DataTable _dt = SQLCommand.GetProductTable(lblPartNumberData.Text, lblReturnType.Text))
                 {
                     if (_dt == null || _dt.Rows.Count == 0)
@@ -53,8 +48,6 @@ namespace ScannerSite
 
         protected void btnBack_Click(object sender, EventArgs e)
         {
-            ReturnId = lblReturnId.Text;
-            ReturnType = lblReturnType.Text == "Lot" ? "LN" : "PN";
             Response.Redirect($"~/Default.aspx");
         }
     }

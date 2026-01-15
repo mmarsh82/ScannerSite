@@ -24,15 +24,6 @@ namespace ScannerSite
         protected global::System.Web.UI.WebControls.Panel ProductPanel;
 
         /// <summary>
-        /// btnQuery control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnQuery;
-
-        /// <summary>
         /// lblScanError control.
         /// </summary>
         /// <remarks>
@@ -96,6 +87,15 @@ namespace ScannerSite
         protected global::System.Web.UI.WebControls.TextBox tbLocFromData;
 
         /// <summary>
+        /// lblSpacer control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSpacer;
+
+        /// <summary>
         /// lblLocToHeader control.
         /// </summary>
         /// <remarks>
@@ -157,6 +157,15 @@ namespace ScannerSite
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnClear;
+
+        /// <summary>
+        /// lblSpacer2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSpacer2;
 
         /// <summary>
         /// btnSubmit control.

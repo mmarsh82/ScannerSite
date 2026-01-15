@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Windows.Controls.Primitives;
 
 namespace M2kClient
 {
@@ -90,18 +91,22 @@ namespace M2kClient
                     try
                     {
                         using (SqlCommand cmd = new SqlCommand(@"SELECT
-	                                                                lot.[Part_Nbr] as 'PartNbr'
-	                                                                ,lotloc.[Locations] as 'Loc'
-	                                                                ,lotloc.[Oh_Qtys] as 'OH'
-	                                                                ,im.[Um] as 'UOM'
-                                                                FROM
-	                                                                [LOT-INIT] lot
-                                                                RIGHT JOIN
-	                                                                [LOT-INIT_Lot_Loc_Qtys] lotloc ON lotloc.[ID1] = lot.[Lot_Number]
-                                                                RIGHT JOIN
-	                                                                [IM-INIT] im ON im.[Part_Number] = lot.[Part_Nbr]
-                                                                WHERE
-	                                                                lot.[Lot_Number] = @p1", sqlCon))
+	lot.[Part_Nbr] as 'PartNbr'
+	,lotloc.[Locations] as 'Loc'
+	,lotloc.[Oh_Qtys] as 'OH'
+	,im.[Um] as 'UOM'
+	,ISNULL(cdl.[ContainerID],0) as 'ContainerId'
+	,ISNULL(cdl.[ContainerRowID],0) as 'ContainerRowId'
+FROM
+	[LOT-INIT] lot
+RIGHT JOIN
+	[LOT-INIT_Lot_Loc_Qtys] lotloc ON lotloc.[ID1] = lot.[Lot_Number]
+RIGHT JOIN
+	[IM-INIT] im ON im.[Part_Number] = lot.[Part_Nbr]
+LEFT JOIN
+	[Nexus_Main].[dbo].[ContainerDetailLot] cdl ON cdl.[LotNumber] = lot.[Lot_Number]
+WHERE
+	lot.[Lot_Number] = @p1", sqlCon))
                         {
                             cmd.Parameters.AddWithValue("p1", productId);
                             using (SqlDataReader reader = cmd.ExecuteReader())
@@ -121,6 +126,10 @@ namespace M2kClient
                                             _result.Add(reader.GetValue(2).ToString());
                                             //Unit of Measure
                                             _result.Add(reader.GetValue(3).ToString());
+                                            //Container Id
+                                            _result.Add(reader.GetValue(4).ToString());
+                                            //Container Row Id
+                                            _result.Add(reader.GetValue(5).ToString());
                                             _counter++;
                                         }
                                         else
@@ -169,38 +178,6 @@ namespace M2kClient
                         using (SqlCommand cmd = new SqlCommand(@"SELECT [Um] FROM [dbo].[IM-INIT] WHERE [Part_Number] = @p1", sqlCon))
                         {
                             cmd.Parameters.AddWithValue("p1", productId);
-                            return cmd.ExecuteScalar().ToString();
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    return null;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get a user name based on the user identity
-        /// </summary>
-        /// <param name="identity">Product ID</param>
-        /// <returns>user name as string</returns>
-        public static string GetUserName(string identity)
-        {
-            using (var sqlCon = Config.GetSqlConnection())
-            {
-                if (sqlCon != null && !string.IsNullOrEmpty(identity))
-                {
-                    sqlCon.Open();
-                    try
-                    {
-                        using (SqlCommand cmd = new SqlCommand(@"SELECT CONCAT([Last_Name], ', ', [First_Name]) FROM [dbo].[CONTACT-INIT] WHERE [Web_User_ID] = @p1;", sqlCon))
-                        {
-                            cmd.Parameters.AddWithValue("p1", identity.ToUpper());
                             return cmd.ExecuteScalar().ToString();
                         }
                     }
@@ -316,7 +293,6 @@ namespace M2kClient
         /// <returns>populated datatable of lot information</returns>
         public static DataTable GetProductTable(string productId, string productType)
         {
-            var _result = new Dictionary<bool, string>();
             var _cmdString = productType == "Lot"
                 ? "SELECT [LotID] as 'Lot Number', CONCAT([OnHand], ' ', [Uom]) as 'On Hand', [Location] FROM [dbo].[SFW_Lot] WHERE [Sku] = @p1 AND [Type] = @p2"
                 : "SELECT CONCAT([OnHand], ' ', [Uom]) as 'On Hand', [Location] FROM [dbo].[SFW_Lot] WHERE [Sku] = @p1 AND [Type] = @p2";
@@ -333,6 +309,85 @@ namespace M2kClient
                             {
                                 adapter.SelectCommand.Parameters.AddWithValue("p1", productId);
                                 adapter.SelectCommand.Parameters.AddWithValue("p2", productType);
+                                adapter.Fill(returnTable);
+                                return returnTable;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            return null;
+                        }
+                    }
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get whether a container ID exists and if the product is already in that container
+        /// </summary>
+        /// <param name="productId">Product ID</param>
+        /// <returns>Read only dictionary that contains a key of success or failure and the value is the message</returns>
+        public static IReadOnlyDictionary<bool, string> ContainerExists(string containerId)
+        {
+            var _result = new Dictionary<bool, string>
+            {
+                { false, "None" }
+            };
+            using (var sqlCon = Config.GetSqlConnection())
+            {
+                if (sqlCon != null)
+                {
+                    sqlCon.Open();
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand(@"SELECT COUNT([ContainerID]) FROM [Nexus_Main].[dbo].[ContainerHeader] WHERE [ContainerID] = @p1", sqlCon))
+                        {
+                            cmd.Parameters.AddWithValue("p1", containerId);
+                            if (Convert.ToInt32(cmd.ExecuteScalar()) != 0)
+                            {
+                                _result.Clear();
+                                _result.Add(true, containerId);
+                            }
+                        }
+                        return _result;
+                    }
+                    catch (Exception ex)
+                    {
+                        _result.Add(false, ex.Message);
+                        return _result;
+                    }
+                }
+                else
+                {
+                    _result.Add(false, "No Connection.");
+                    return _result;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get container data
+        /// </summary>
+        /// <param name="containerId">Container ID</param>
+        /// <returns>populated datatable of container information</returns>
+        public static DataTable GetContainerTable(string containerId)
+        {
+            using (var sqlCon = Config.GetSqlConnection())
+            {
+                if (sqlCon != null)
+                {
+                    sqlCon.Open();
+                    using (var returnTable = new DataTable())
+                    {
+                        try
+                        {
+                            using (SqlDataAdapter adapter = new SqlDataAdapter("SELECT * FROM dbo.[SFW_Containers] WHERE [ContainerID] = @p1", sqlCon))
+                            {
+                                adapter.SelectCommand.Parameters.AddWithValue("p1", containerId);
                                 adapter.Fill(returnTable);
                                 return returnTable;
                             }

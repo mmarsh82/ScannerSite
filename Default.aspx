@@ -23,10 +23,6 @@
 		<table>
             <tr>
                 <td class="heading">Product Inventory Move</td>
-                <td style="width:50px" />
-                <td>
-                    <asp:Button ID="btnQuery" runat="server" Text="Query" onclick="btnQuery_Click"/>
-                </td>
             </tr>
         </table>
 
@@ -51,12 +47,11 @@
                 <td><asp:Label ID="lblLocFromHeader" runat="server">Location From:</asp:Label></td>
                 <td>
                     <asp:Label ID="lblLocFromData" runat="server"></asp:Label>
-                    <asp:TextBox ID="tbLocFromData" runat="server" Width="75"></asp:TextBox>
+                    <asp:TextBox ID="tbLocFromData" runat="server" Width="50"></asp:TextBox>
+                    <asp:Label ID="lblSpacer" runat="server" Width="10"> </asp:Label>
+                    <asp:Label ID="lblLocToHeader" runat="server">To:</asp:Label>
+                    <asp:TextBox ID="tbLocToData" runat="server" Width="50"></asp:TextBox>
                 </td>
-            </tr>
-            <tr>
-                <td><asp:Label ID="lblLocToHeader" runat="server">Location To:</asp:Label></td>
-                <td><asp:TextBox ID="tbLocToData" runat="server" Width="75"></asp:TextBox></td>
             </tr>
             <tr>
                 <td><asp:Label ID="lblQtyHeader" runat="server">Quantity:</asp:Label></td>
@@ -66,18 +61,18 @@
                     <asp:Label ID="lblUomData" Width="50" runat="server"></asp:Label>
                 </td>
             </tr>
+
         </table>
 
-        <table style="height: 0px; width: 200px">
+        <table>
             <tr>
                 <td colspan="4">&nbsp;</td>
             </tr>
             <tr>
-                <td style="width:10px"></td>
                 <td class="style3">
                     <asp:Button ID="btnClear" runat="server" Text="Clear" Width="54px" onclick="btnClear_Click" />
                 </td>
-                <td style="width:50px">&nbsp;</td>
+                <td><asp:Label ID="lblSpacer2" runat="server" Width="170"> </asp:Label></td>
                 <td class="style3">
                     <asp:Button ID="btnSubmit" runat="server" Text="Submit" onclick="btnSubmit_Click" />
                 </td>

@@ -16,7 +16,7 @@
 	    TD#topnav2 A:visited { BACKGROUND: #000; COLOR: #fff }
     </style>
 </asp:Content>
-<asp:Content ID="Home" ContentPlaceHolderID="PageContentHolder" runat="server">
+<asp:Content ID="query" ContentPlaceHolderID="PageContentHolder" runat="server">
 	<table>
 		<tr>
 			<td>
@@ -27,7 +27,7 @@
 			<td><asp:Button ID="Button1" runat="server" Text="Back" onclick="btnBack_Click"/></td>
 		</tr>
 		<tr>
-			<td colspan="3"><asp:GridView ID="gvProduct" runat="server" /></td>
+			<td colspan="3"><asp:GridView ID="gvProduct" CssClass="grivdiv" runat="server" /></td>
 		</tr>
 	</table>
 

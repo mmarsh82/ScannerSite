@@ -11,88 +11,70 @@ namespace ScannerSite
 {
 
 
-    public partial class Main
+    public partial class Container
     {
 
         /// <summary>
-        /// head control.
+        /// ProductPanel control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder head;
+        protected global::System.Web.UI.WebControls.Panel ProductPanel;
 
         /// <summary>
-        /// MainForm control.
+        /// btnView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm MainForm;
+        protected global::System.Web.UI.WebControls.Button btnView;
 
         /// <summary>
-        /// actionSignOut control.
+        /// btnAdd control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor actionSignOut;
+        protected global::System.Web.UI.WebControls.Button btnAdd;
 
         /// <summary>
-        /// actionHome control.
+        /// btnRemove control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor actionHome;
+        protected global::System.Web.UI.WebControls.Button btnRemove;
 
         /// <summary>
-        /// actionProdQuery control.
+        /// btnMove control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlAnchor actionProdQuery;
+        protected global::System.Web.UI.WebControls.Button btnMove;
 
         /// <summary>
-        /// PageContentHolder control.
+        /// lblLocationHeader control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.ContentPlaceHolder PageContentHolder;
+        protected global::System.Web.UI.WebControls.Label lblLocationHeader;
 
         /// <summary>
-        /// lblNameHeader control.
+        /// tbLocationData control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        public global::System.Web.UI.WebControls.Label lblNameHeader;
-
-        /// <summary>
-        /// lblName control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        public global::System.Web.UI.WebControls.Label lblName;
-
-        /// <summary>
-        /// lblSite control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        public global::System.Web.UI.WebControls.Label lblSite;
+        protected global::System.Web.UI.WebControls.TextBox tbLocationData;
     }
 }

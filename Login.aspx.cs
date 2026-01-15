@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Web;
+using System.DirectoryServices.AccountManagement;
 using System.Web.Security;
 using System.Web.UI;
 
@@ -12,6 +12,9 @@ namespace ScannerSite
             FormsAuthentication.SignOut();
             ((Main)Master).lblName.Text = "";
             ((Main)Master).lblSite.Text = "";
+            Session["ProductType"] = null;
+            Session["ProductNumber"] = null;
+            Session["ProductId"] = null;
             txtUser.Focus();
         }
 
@@ -21,10 +24,38 @@ namespace ScannerSite
             {
                 try
                 {
+                    try
+                    {
+                        var _test = Membership.ValidateUser($"{txtUser.Text}@contiwan.com", txtPassword.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        lblLoginFailure.Visible = true;
+                        lblLoginFailure.Text = ex.Message;
+                        lblLoginFailure.ForeColor = System.Drawing.Color.Red;
+                        return;
+                    }
                     if (Membership.ValidateUser($"{txtUser.Text}@contiwan.com", txtPassword.Text))
                     {
-                        FormsAuthentication.SetAuthCookie(txtUser.Text, true);
-                        FormsAuthentication.RedirectFromLoginPage(txtUser.Text, true);
+                        var _displayName = string.Empty;
+                        using (var _pc = new PrincipalContext(ContextType.Domain))
+                        {
+                            using (var _prin = UserPrincipal.FindByIdentity(_pc, $"{txtUser.Text}@contiwan.com"))
+                            {
+                                _displayName = $"{_prin.Surname}, {_prin.GivenName}";
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(_displayName))
+                        {
+                            FormsAuthentication.SetAuthCookie(_displayName, true);
+                            FormsAuthentication.RedirectFromLoginPage(_displayName, true);
+                        }
+                        else
+                        {
+                            lblLoginFailure.Visible = true;
+                            lblLoginFailure.Text = "Account not found.";
+                            lblLoginFailure.ForeColor = System.Drawing.Color.Red;
+                        }
                     }
                     else
                     {
